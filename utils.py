@@ -7,11 +7,12 @@ def insere_pessoas():
     pessoa.save()
 
 def consulta_pessoas():
+
     # O metodo query.all() busca todos os registros depois insere eles em uma lista.
     #OBS: Se a quantidade de registros for muito grande, em algum momento isso se torna um problema
     pess = Pessoas.query.all()
-    print(pess[0].nome,pess[0].idade)
-    print(pess)
+    for p in pess:
+        print(p.nome,p.idade)
 
     # Aqui o campo nome já foi indexado na criação no arquivo modelo, isso facilita e reduz gargalos a longo prazo
     # o banco tráz só o necessário para a consulta.
@@ -47,6 +48,6 @@ def exclui_pessoa():
 # e executa o comando consulta() ou insere_pessoas()
 if __name__ == '__main__':
     #insere_pessoas()
-    #altera_pessoa()
-    exclui_pessoa()
+    # altera_pessoa()
+    # exclui_pessoa()
     consulta_pessoas()
