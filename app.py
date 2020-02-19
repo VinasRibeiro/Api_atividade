@@ -31,14 +31,17 @@ class Pessoa(Resource):
 
     def delete(self, nome):
         pessoa = Pessoas.query.filter_by(nome=nome).first()
-        pessoa.delete()
-        return {'status':'Sucesso', 'mensagem':'pessoa excluida com sucesso'}
+
+        if not pessoa == None:
+            pessoa.delete()
+            return {'status':'Sucesso', 'mensagem':'pessoa excluida com sucesso'}
+        else:
+            return {'status':'erro', 'mensagem':'pessoa não encontrada'}
 
 class ListaPessoas(Resource):
     def get(self):
         pessoas = Pessoas.query.all()
         response =[{'id':i.id, 'nome':i.nome, 'idade':i.idade} for i in pessoas]
-        print(type(pessoas))
         return response
 
     def post(self):
@@ -52,27 +55,61 @@ class ListaPessoas(Resource):
         }
         return response
 
+
 class ListaAtividades(Resource):
     def get(self):
         atividades = Atividades.query.all()
         response = [{'id':i.id, 'nome':i.nome, 'pessoa':i.pessoa.nome} for i in atividades]
+        print(atividades)
         return response
 
     def post(self):
         dados = request.json
+
         pessoa = Pessoas.query.filter_by(nome=dados['pessoa']).first()
         atividade = Atividades(nome=dados['nome'], pessoa=pessoa)
-        atividade.save()
-        response = {
-            'id':atividade.id,
-            'nome':atividade.nome,
-            'pessoa':atividade.pessoa.nome
-        }
-        return response
+        if not pessoa == None:
+            atividade.save()
+            response = {
+                'id':atividade.id,
+                'nome':atividade.nome,
+                'pessoa':atividade.pessoa.nome
+            }
+            return response
+        else:
+            return {'status':'erro','mensagem':'Usuario não encontradooooo'}
+
+
+class Atividade(Resource):
+    def delete(self, id):
+        ativi = Atividades.query.filter_by(id=id).first()
+        if not ativi == None:
+            ativi.delete()
+            return {'status':'Sucesso', 'mensagem':'Atividade escluida com sucesso'}
+        else:
+            return{'status':'erro', 'mensagem':'Usuário não encontrado'}
+
+    def put(self, id):
+        buscaativ = Atividades.query.filter_by(id=id).first()
+        dados = request.json
+
+        print(dados)
+        print(buscaativ)
+
+        if not buscaativ == None:
+            if 'nome' in dados:
+                buscaativ.nome = dados['nome']
+                buscaativ.save()
+                return 'teste'
+        else:
+            return 'id não encontrado'
+
+
 
 api.add_resource(Pessoa, '/pessoa/<string:nome>/')
 api.add_resource(ListaPessoas, '/pessoa/')
 api.add_resource(ListaAtividades, '/atividades/')
+api.add_resource(Atividade, '/atividade/<int:id>/')
 
 if __name__ == '__main__':
     app.run(debug=True)

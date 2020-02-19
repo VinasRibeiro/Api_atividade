@@ -1,9 +1,10 @@
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
-from sqlalchemy.orm import scoped_session, sessionmaker, relationship
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 
 
-engine = create_engine('sqlite:///atividades.db', convert_unicode=True)
+# O parametro check_same_thread False, não verifica se esta na mesma thread.
+engine = create_engine('sqlite:///atividades.db', convert_unicode=True,connect_args={'check_same_thread':False})
 db_session = scoped_session(sessionmaker(autocommit=False, bind=engine))
 
 Base = declarative_base()
@@ -35,7 +36,10 @@ class Atividades(Base):
     id = Column(Integer, primary_key=True)
     nome = Column(String(80))
     pessoa_id = Column(Integer, ForeignKey('pessoas.id'))
-    pessoa = relationship("Pessoas")
+    # A função backref=backref("children", cascade="all,delete" deleta os registros que possuem chave estrangeira
+    # Quando um registro pai é deletado os registro filho dele tbm são
+    pessoa = relationship(Pessoas, backref=backref("children", cascade="all,delete"))
+
 
     def __repr__(self):
         return f'<Atividades {self.nome}>'
@@ -46,9 +50,11 @@ class Atividades(Base):
         db_session.add(self)
         db_session.commit()
 
+
     def delete(self):
         db_session.delete(self)
         db_session.commit()
+
 
 def init_db():
     Base.metadata.create_all(bind=engine)
